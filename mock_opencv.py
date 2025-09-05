@@ -3,7 +3,7 @@ Mock OpenCV implementation for testing when OpenCV is not available
 """
 
 import numpy as np
-from typing import Tuple, Any
+from typing import Tuple, Any, List
 
 class MockVideoCapture:
     """Mock VideoCapture class"""
@@ -105,6 +105,27 @@ def putText(img: np.ndarray, text: str, org: Tuple[int, int], font: int, fontSca
     for i, char in enumerate(text[:20]):  # Limit text length
         if x + i * 10 < img.shape[1]:
             img[y:y+20, x+i*10:x+(i+1)*10] = color
+    return img
+
+def fillPoly(img: np.ndarray, pts: List[np.ndarray], color: Tuple[int, int, int]) -> np.ndarray:
+    """Fill polygon on image (simplified)"""
+    for poly in pts:
+        if len(poly) >= 3:
+            # Simple triangle filling
+            for i in range(len(poly)):
+                p1 = poly[i]
+                p2 = poly[(i + 1) % len(poly)]
+                # Draw line between points
+                x1, y1 = int(p1[0]), int(p1[1])
+                x2, y2 = int(p2[0]), int(p2[1])
+                # Simple line drawing
+                steps = max(abs(x2 - x1), abs(y2 - y1))
+                if steps > 0:
+                    for t in np.linspace(0, 1, steps):
+                        x = int(x1 + t * (x2 - x1))
+                        y = int(y1 + t * (y2 - y1))
+                        if 0 <= x < img.shape[1] and 0 <= y < img.shape[0]:
+                            img[y, x] = color
     return img
 
 # Mock font constants
