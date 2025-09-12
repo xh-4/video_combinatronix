@@ -1,0 +1,18 @@
+# Requirements for File Sharing Program
+# No external dependencies required - uses only Python standard library
+
+# The program uses these built-in modules:
+# - tkinter (GUI)
+# - socket (networking)
+# - threading (concurrent operations)
+# - os, pathlib (file operations)
+# - json (data serialization)
+# - shutil (file copying)
+# - time (timestamps)
+
+# To run the program:
+# python file_sharing.py
+
+# Note: This program is designed to work with Python 3.6+
+# and requires no additional package installation.
+

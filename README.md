@@ -296,3 +296,6 @@ MIT License - see LICENSE file for details.
 - Built on the SKI/BCW combinator calculus
 - Inspired by functional signal processing techniques
 - OpenCV integration for video processing
+
+
+

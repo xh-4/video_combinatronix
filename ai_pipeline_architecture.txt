@@ -1,0 +1,94 @@
+AI Pipeline Carrier System Architecture
+========================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           CONTINUOUS AI PIPELINE CYCLE                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
+                    │ INGEST  │───▶│ DENOISE │───▶│ PROJECT │───▶│  RESET  │
+                    │         │    │         │    │         │    │         │
+                    │ • Smooth│    │ • Gauss │    │ • Sinus │    │ • Soft  │
+                    │ • Log   │    │ • Damped│    │ • Gated │    │ • Rational│
+                    │ • Gated │    │ • Rational│   │ • Log   │    │ • Bent  │
+                    └─────────┘    └─────────┘    └─────────┘    └─────────┘
+                         ▲                                              │
+                         │                                              │
+                         └──────────────────────────────────────────────┘
+                                        RESONANCE-BASED TRANSITIONS
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            HPU COMPUTATIONAL CARRIERS                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Carrier_0          Carrier_1          Carrier_2          Carrier_3
+    ┌─────────┐        ┌─────────┐        ┌─────────┐        ┌─────────┐
+    │ Load: 0.3│        │ Load: 0.7│        │ Load: 0.1│        │ Load: 0.5│
+    │ Stage:   │        │ Stage:   │        │ Stage:   │        │ Stage:   │
+    │ DENOISE  │        │ PROJECT  │        │ INGEST   │        │ RESET    │
+    └─────────┘        └─────────┘        └─────────┘        └─────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           RESONANCE SCHEDULER                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Field Analysis → Resonance Calculation → Stage Selection → Carrier Assignment
+
+    • INGEST:  Resonates with raw signal energy
+    • DENOISE: Resonates with noise characteristics  
+    • PROJECT: Resonates with feature richness
+    • RESET:   Always ready (resonance = 0.8)
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            DATA FLOW PATTERN                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Input Data → FieldIQ Conversion → Stage Processing → Output → Reset → Repeat
+
+    Data Sources:
+    • Video frames (VideoFrame)
+    • Video chunks (VideoChunk) 
+    • Numpy arrays
+    • Synthetic data (for demo)
+
+    Processing:
+    • Each stage uses composed activation realms
+    • Resonance determines stage transitions
+    • Carriers run stages in parallel
+    • Continuous cycle with state management
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          ACTIVATION REALM COMPOSITION                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    INGEST Pipeline:
+    SoftStep(tau=0.3) → LogRectifier(α=1.5) → GatedTanh(β=2.0)
+
+    DENOISE Pipeline:  
+    GaussianBump(σ=0.4) → DampedSinusoid(ω=1.2) → RationalLinear → BentIdentity(a=0.6)
+
+    PROJECT Pipeline:
+    Sinusoid(ω=2.5) → GatedTanh(β=1.8) → LogRectifier(α=2.0) → GaussianBump(σ=0.7)
+
+    RESET Pipeline:
+    SoftStep(tau=0.1) → RationalLinear → BentIdentity(a=0.3)
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              VM INTEGRATION                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Activation Realms → VM Nodes → Combinator Calculus → Cross-Language Deployment
+
+    • Each realm compiles to VM representation
+    • Pipeline stages become VM expressions
+    • Serialization for HPU deployment
+    • Resonance scheduling through VM combinators
+
+This architecture enables:
+✓ Continuous AI processing pipelines
+✓ Resonance-based stage selection  
+✓ HPU carrier load balancing
+✓ Real-time data ingestion
+✓ Scalable activation realm composition
+✓ VM integration for cross-language deployment
+

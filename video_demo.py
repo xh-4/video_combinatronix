@@ -149,7 +149,7 @@ def demo_video_processing():
     
     print("\n🎉 All video processing demos completed successfully!")
 
-def create_demo_video(output_path="demo_video.mp4", duration=3.0, fps=30):
+def create_demo_video(output_path="demo_video.mp4", duration=15.0, fps=30):
     """Create a demo video with interesting patterns"""
     try:
         import cv2
