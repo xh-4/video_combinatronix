@@ -1,67 +1,52 @@
-#!/usr/bin/env python3
-"""
-Setup script for Combinator Kernel
-"""
-
 from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
-
 setup(
-    name="combinator-kernel",
-    version="1.0.0",
-    author="Combinator Kernel Developer",
-    author_email="developer@combinator-kernel.dev",
-    description="A powerful functional programming kernel for quadrature (I/Q) signal processing with video processing capabilities",
-    long_description=long_description,
+    name="channelpy",
+    version="0.1.0",
+    description="Channel Algebra for Structured Data Analysis",
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/combinator-kernel",
-    packages=find_packages(),
+    author="Channel Algebra Team",
+    author_email="contact@channelalgebra.org",
+    url="https://github.com/channelalgebra/channelpy",
+    packages=find_packages(exclude=["tests", "docs"]),
+    install_requires=[
+        "numpy>=1.20.0",
+        "scipy>=1.7.0",
+        "matplotlib>=3.3.0",
+        "pandas>=1.3.0",
+        "scikit-learn>=0.24.0",
+    ],
+    extras_require={
+        "dev": [
+            "pytest>=6.0",
+            "pytest-cov>=2.10",
+            "black>=21.0",
+            "flake8>=3.9",
+            "mypy>=0.900",
+            "sphinx>=4.0",
+            "sphinx-rtd-theme>=0.5",
+        ],
+        "viz": [
+            "seaborn>=0.11.0",
+            "plotly>=5.0.0",
+        ],
+        "applications": [
+            "yfinance>=0.1.60",  # For trading examples
+            "ta>=0.7.0",  # Technical analysis
+        ],
+    },
+    python_requires=">=3.8",
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Scientific/Engineering :: Information Analysis",
-        "Topic :: Multimedia :: Video",
-        "Topic :: Multimedia :: Sound/Audio",
-        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Mathematics",
     ],
-    python_requires=">=3.8",
-    install_requires=requirements,
-    extras_require={
-        "dev": [
-            "pytest>=6.0",
-            "pytest-cov>=2.0",
-            "black>=21.0",
-            "flake8>=3.8",
-            "mypy>=0.800",
-        ],
-        "docs": [
-            "sphinx>=4.0",
-            "sphinx-rtd-theme>=0.5",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "combinator-demo=Combinator_Kernel:main",
-        ],
-    },
-    include_package_data=True,
-    zip_safe=False,
 )
-
-
-

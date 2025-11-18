@@ -1,301 +1,232 @@
-# HPU Quadrature Combinator Kernel
+# ChannelPy: Channel Algebra for Python
 
-A powerful functional programming kernel for quadrature (I/Q) signal processing with video processing capabilities, built on the SKI/BCW combinator calculus.
-
-## Features
-
-### 🎵 **Audio Processing**
-- **DC Offset Removal**: Automatic DC bias correction in analytic signal generation
-- **Full Quadrature Support**: Proper I/Q validation and phase coherence
-- **Functional Combinators**: SKI/BCW calculus for signal processing
-- **Real-time Processing**: Efficient streaming audio processing
-
-### 🎬 **Video Processing**
-- **Chunked Processing**: Memory-efficient video processing in configurable chunks
-- **Streaming Support**: Real-time video stream processing
-- **Multi-channel Analysis**: Process RGB channels independently
-- **Spectral Analysis**: Frequency domain analysis of video content
-
-### 🔧 **Core Capabilities**
-- **Analytic Signal Generation**: Real-to-complex conversion with Hilbert transform
-- **Phase Operations**: Rotation, shifting, and modulation
-- **Frequency Operations**: Shifting, filtering, and spectral analysis
-- **Temporal Operations**: Delay, gating, and beat folding
-- **Combinator Calculus**: Functional composition of signal processors
+A production-ready Python library implementing channel algebra concepts for structured data analysis, adaptive thresholding, and interpretable AI.
 
 ## Installation
 
-### Requirements
-- Python 3.8+
-- NumPy
-- OpenCV (optional, for video processing)
-
-### Install Dependencies
 ```bash
-pip install numpy opencv-python
-```
-
-### Basic Installation
-```bash
-git clone https://github.com/yourusername/combinator-kernel.git
-cd combinator-kernel
-pip install -r requirements.txt
+pip install channelpy
 ```
 
 ## Quick Start
 
-### Audio Processing
 ```python
-from Combinator_Kernel import make_field_from_real, lowpass_hz, phase_deg, split_add, B
-import numpy as np
+from channelpy import State, gate, admit, ChannelPipeline
+from channelpy.adaptive import StreamingAdaptiveThreshold
 
-# Create a test signal
-sr = 48000
-t = np.linspace(0, 1, sr)
-x = 0.8 * np.cos(2 * np.pi * 440 * t)  # 440 Hz tone
+# Create states
+state1 = State(i=1, q=0)  # δ (puncture)
+state2 = State(i=1, q=1)  # ψ (resonant)
 
-# Convert to FieldIQ
-field = make_field_from_real(x, sr, tag=("role", "carrier"))
+# Apply operations
+validated = admit(state1)  # δ → ψ
+cleaned = gate(state1)     # δ → ∅
 
-# Apply processing chain
-processor = B(lowpass_hz(1200.0))(split_add(phase_deg(90.0, 440.0)))
-result = processor(field)
+# Build a pipeline
+pipeline = ChannelPipeline()
+pipeline.add_preprocessor(normalize)
+pipeline.add_encoder(threshold_encoder)
+pipeline.add_interpreter(rule_based)
 
-print(f"Valid quadrature: {result.is_valid_quadrature()}")
-print(f"RMS: {np.sqrt(np.mean(result.power))}")
+# Fit and use
+pipeline.fit(train_data, train_labels)
+decisions, states = pipeline.transform(test_data)
+
+# Adaptive thresholds
+threshold = StreamingAdaptiveThreshold()
+for value in data_stream:
+    threshold.update(value)
+    state = threshold.encode(value)
+    print(f"Value: {value:.2f}, State: {state}, Thresholds: {threshold.get_stats()}")
 ```
 
-### Video Processing
-```python
-from Combinator_Kernel import load_video_chunks, video_frame_processor, lowpass_hz, amp, B
+## Core Concepts
 
-# Process video file in chunks
-for chunk in load_video_chunks('video.mp4', chunk_size=30, overlap=5):
-    # Convert to FieldIQ and process
-    processor = video_frame_processor(
-        B(lowpass_hz(1000.0))(amp(0.8)),
-        channel=0  # Blue channel
-    )
-    processed_frames = processor(chunk)
-    print(f"Processed {len(processed_frames)} frames")
+### Channel States
+
+Channel algebra uses four fundamental states represented by two bits:
+
+- **∅ (Empty)**: i=0, q=0 - Absent
+- **δ (Delta)**: i=1, q=0 - Present but not member (puncture)
+- **φ (Phi)**: i=0, q=1 - Not present but expected (hole)
+- **ψ (Psi)**: i=1, q=1 - Present and member (resonant)
+
+### Basic Operations
+
+```python
+from channelpy import gate, admit, overlay, weave, comp
+
+# Gate: Remove elements not validated by membership
+gate(State(1, 0))  # δ → ∅
+
+# Admit: Grant membership to present elements
+admit(State(1, 0))  # δ → ψ
+
+# Overlay: Union (bitwise OR)
+overlay(State(1, 0), State(0, 1))  # δ | φ = ψ
+
+# Weave: Intersection (bitwise AND)
+weave(State(1, 1), State(1, 0))  # ψ & δ = δ
+
+# Complement: Flip both bits
+comp(State(0, 0))  # ∅ → ψ
 ```
 
-## Core Classes
+### Pipeline Architecture
 
-### FieldIQ
-The fundamental data structure representing a complex analytic signal:
+ChannelPy uses a three-stage pipeline:
+
+1. **Preprocess**: Raw data → Features
+2. **Encode**: Features → States
+3. **Interpret**: States → Decisions
+
 ```python
-@dataclass
-class FieldIQ:
-    z: Array                 # complex: I + jQ
-    sr: float                # sample rate
-    roles: Dict[str, Any]    # metadata
+from channelpy import ChannelPipeline, ThresholdEncoder
+
+pipeline = ChannelPipeline()
+pipeline.add_preprocessor(normalize_data)
+pipeline.add_encoder(ThresholdEncoder(threshold_i=0.5, threshold_q=0.75))
+pipeline.add_interpreter(rule_based_interpreter)
+
+pipeline.fit(train_data, train_labels)
+decisions, states = pipeline.transform(test_data)
 ```
 
-**Properties:**
-- `I`, `Q`: Real and imaginary components
-- `magnitude`, `phase`, `power`: Signal properties
-- `is_valid_quadrature()`: Validates I/Q pair quality
+### Adaptive Thresholds
 
-**Methods:**
-- `rotate(degrees)`: Phase rotation
-- `scale(gain)`: Amplitude scaling
-- `freq_shift(delta_hz)`: Frequency shifting
-- `delay_ms(ms)`: Time delay
-- `lowpass_hz(cutoff)`: Low-pass filtering
+For streaming data, use adaptive thresholds that learn from the data:
 
-### VideoFrame
-Represents a single video frame:
 ```python
-@dataclass
-class VideoFrame:
-    data: Array              # Frame data (H, W, C)
-    frame_number: int
-    timestamp: float
-    color_space: ColorSpace
-    fps: float
-```
+from channelpy.adaptive import StreamingAdaptiveThreshold
 
-### VideoChunk
-Manages chunks of video frames:
-```python
-@dataclass
-class VideoChunk:
-    frames: List[VideoFrame]
-    chunk_id: int
-    start_time: float
-    end_time: float
-```
+threshold = StreamingAdaptiveThreshold(window_size=1000)
 
-## Combinator Calculus
-
-The kernel implements the SKI/BCW combinator calculus for functional signal processing:
-
-### Basic Combinators
-- **K**: Constant function (`K a b = a`)
-- **S**: Application combinator (`S f g x = f x (g x)`)
-- **B**: Composition (`B f g x = f (g x)`)
-- **C**: Argument swapping (`C f x y = f y x`)
-- **W**: Duplication (`W f x = f x x`)
-
-### Signal Combinators
-- **PLUS**: Addition (`PLUS a b = a + b`)
-- **TIMES**: Multiplication (`TIMES a b = a * b`)
-- **split_add**: Split and add (`split_add f x = x + f(x)`)
-- **split_mul**: Split and multiply (`split_mul f x = x * f(x)`)
-
-### Example: Complex Processing Chain
-```python
-# Create a complex effect chain
-wobble = split_mul(freq_shift(5.0))           # Ring modulation
-chorus = split_add(delay_ms(15.0))            # Chorus effect
-filter_chain = B(lowpass_hz(1000.0))(amp(0.7))
-
-# Compose effects
-complex_effect = B(filter_chain)(
-    B(chorus)(wobble)
-)
-
-# Apply to signal
-result = complex_effect(input_field)
-```
-
-## Video Processing Examples
-
-### Frame-by-Frame Processing
-```python
-# Process each frame independently
-frame_processor = video_frame_processor(
-    B(lowpass_hz(800.0))(amp(0.7)),
-    channel=0
-)
-
-for chunk in load_video_chunks('video.mp4'):
-    processed_frames = frame_processor(chunk)
-    # Process each frame...
-```
-
-### Temporal Processing
-```python
-# Process entire chunk as temporal sequence
-temporal_processor = video_temporal_processor(
-    B(lowpass_hz(1000.0))(
-        split_add(phase_deg(45.0, 1000.0))
-    ),
-    channel=1
-)
-
-for chunk in load_video_chunks('video.mp4'):
-    result = temporal_processor(chunk)
-    # Process temporal sequence...
-```
-
-### Spectral Analysis
-```python
-# Analyze spectral content
-analyzer = video_spectral_analyzer(channel=0)
-
-for chunk in load_video_chunks('video.mp4'):
-    analysis = analyzer(chunk)
-    print(f"Dominant frequency: {analysis['dominant_freq']} Hz")
-    print(f"Spectral centroid: {analysis['spectral_centroid']}")
-    print(f"Total power: {analysis['total_power']}")
-```
-
-## Streaming Processing
-
-### Real-time Video Processing
-```python
-from Combinator_Kernel import VideoStreamProcessor
-
-# Create streaming processor
-processor = VideoStreamProcessor(chunk_size=30, overlap=5)
-
-# Process frames as they arrive
-for frame in video_source:
-    chunk = processor.add_frame(frame)
-    if chunk is not None:
-        # Process chunk
-        result = process_chunk(chunk)
-```
-
-### Custom Stream Processing
-```python
-def custom_processor(chunk):
-    fields = chunk.to_field_iq_sequence(channel=0)
-    processed = [my_effect_chain(field) for field in fields]
-    return {
-        'chunk_id': chunk.chunk_id,
-        'frame_count': len(processed),
-        'avg_power': np.mean([np.sum(field.power) for field in processed])
-    }
-
-# Process video stream
-results = process_video_stream('video.mp4', custom_processor)
-```
-
-## Advanced Features
-
-### DC Offset Correction
-The kernel automatically removes DC offset from signals:
-```python
-# DC offset is automatically removed
-field = make_field_from_real(signal_with_dc_offset, sr)
-print(f"DC removed: {np.mean(field.I):.6f}")  # Should be ~0
-```
-
-### Quadrature Validation
-```python
-# Check I/Q pair quality
-if field.is_valid_quadrature(tolerance=1e-6):
-    print("Valid quadrature pair")
-else:
-    print("Quadrature pair needs correction")
-```
-
-### Role-based Processing
-```python
-# Tag signals with metadata
-field = field.with_role("instrument", "guitar")
-field = field.with_role("effect", "reverb")
-
-# Access roles
-print(f"Roles: {field.roles}")
+for value in data_stream:
+    threshold.update(value)
+    state = threshold.encode(value)
+    # Process state...
 ```
 
 ## Examples
 
-See the `examples/` directory for:
-- `audio_demo.py`: Audio processing examples
-- `video_demo.py`: Video processing examples
-- `streaming_demo.py`: Real-time processing examples
+### Trading System
 
-## Testing
+```python
+from channelpy.applications import TradingChannelSystem
 
-Run the test suite:
-```bash
-python test_opencv.py      # Test OpenCV integration
-python video_demo.py       # Test video processing
-python Combinator_Kernel.py # Run built-in demos
+system = TradingChannelSystem()
+system.fit(historical_prices, historical_volumes)
+
+for price, volume in market_stream:
+    signal = system.process_tick(price, volume)
+    if signal['action'] == 'BUY':
+        execute_trade(signal)
 ```
+
+### Medical Diagnosis
+
+```python
+from channelpy import ChannelPipeline, DualFeatureEncoder
+
+# Create pipeline for medical diagnosis
+pipeline = ChannelPipeline()
+pipeline.add_encoder(DualFeatureEncoder())
+pipeline.add_interpreter(medical_rules)
+
+# Fit on patient data
+pipeline.fit(patient_features, diagnoses)
+
+# Make predictions
+diagnosis, states = pipeline.transform(new_patient)
+```
+
+## Advanced Features
+
+### Nested States
+
+For hierarchical data structures:
+
+```python
+from channelpy.core import NestedState
+
+# Multi-level nested state
+state = NestedState(
+    level0=State(1, 1),  # ψ
+    level1=State(0, 1),  # φ
+    level2=State(1, 0)   # δ
+)
+print(state)  # ψ.φ.δ
+```
+
+### Parallel Channels
+
+For independent dimensions:
+
+```python
+from channelpy.core import ParallelChannels
+
+channels = ParallelChannels(
+    technical=State(1, 1),   # ψ
+    business=State(1, 0),    # δ
+    team=State(0, 1)         # φ
+)
+```
+
+### Visualization
+
+```python
+from channelpy.visualization import plot_states, plot_state_distribution
+
+# Plot state sequence
+plot_states(states, title="Channel States Over Time")
+
+# Plot state distribution
+plot_state_distribution(states, title="State Distribution")
+```
+
+## Theory
+
+Channel algebra provides a mathematical framework for structured data analysis based on:
+
+- **Presence (i)**: Whether an element is present
+- **Membership (q)**: Whether an element belongs to a set
+- **Operations**: Gate, admit, overlay, weave, complement
+- **Topology**: Persistent homology and Betti numbers
+- **Combinators**: Function composition and lazy evaluation
+
+## Documentation
+
+Full documentation is available at [https://channelpy.readthedocs.io](https://channelpy.readthedocs.io)
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## Citation
 
-- Built on the SKI/BCW combinator calculus
-- Inspired by functional signal processing techniques
-- OpenCV integration for video processing
+If you use ChannelPy in your research, please cite:
 
+```bibtex
+@software{channelpy2024,
+  title={ChannelPy: Channel Algebra for Structured Data Analysis},
+  author={Channel Algebra Team},
+  year={2024},
+  url={https://github.com/channelalgebra/channelpy}
+}
+```
 
+## Roadmap
 
+- [x] Core state representation and operations
+- [x] Pipeline architecture
+- [x] Adaptive thresholds
+- [x] Basic visualization
+- [ ] Topological features (persistent homology)
+- [ ] Combinator calculus
+- [ ] Advanced applications
+- [ ] Performance optimization
+- [ ] Full documentation
